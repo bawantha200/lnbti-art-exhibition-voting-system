@@ -18,7 +18,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: path.resolve(process.cwd(), 'dist'),
+    outDir: 'dist',
     emptyOutDir: true,
   },
 })
