@@ -162,10 +162,10 @@ function LiveLeaderboardPage() {
         )}
 
         <div className="leaderboard-footer">
-          <span>
+          {/* <span>
             <RefreshCw size={13} />
             Automatically updates every 5 seconds
-          </span>
+          </span> */}
           <span>LNBTI Japanese Club</span>
         </div>
       </section>
