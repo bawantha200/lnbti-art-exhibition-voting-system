@@ -40,7 +40,18 @@ export async function verifyOTP(email, code) {
       committed = true
       throw createHttpError('Incorrect code.', 400)
     }
-    await client.query('DELETE FROM otps WHERE email = $1', [email])
+    await client.query(
+      `UPDATE voters
+      SET verified_at = COALESCE(verified_at, NOW())
+      WHERE email = $1`,
+      [email]
+    )
+
+    await client.query(
+      'DELETE FROM otps WHERE email = $1',
+      [email]
+    )
+
     await client.query('COMMIT')
     committed = true
   } catch (error) {

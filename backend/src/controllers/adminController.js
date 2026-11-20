@@ -51,10 +51,16 @@ export function adminLogoutController(_request, response) {
 export async function getOverviewController(_request, response) {
   const result = await pool.query(`
     SELECT
-      (SELECT COUNT(*) FROM voters) AS registered_voters,
-      (SELECT COUNT(*) FROM voters WHERE has_voted) AS students_voted,
+      (SELECT COUNT(*) FROM voters
+       WHERE verified_at IS NOT NULL) AS registered_voters,
+
+      (SELECT COUNT(*) FROM voters
+       WHERE has_voted = TRUE) AS students_voted,
+
       (SELECT COUNT(*) FROM votes) AS total_votes,
-      (SELECT COUNT(*) FROM artworks WHERE is_active) AS active_artworks
+
+      (SELECT COUNT(*) FROM artworks
+       WHERE is_active = TRUE) AS active_artworks
   `)
 
   return response.json(result.rows[0])
