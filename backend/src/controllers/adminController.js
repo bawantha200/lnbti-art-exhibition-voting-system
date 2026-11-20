@@ -4,10 +4,45 @@ import { sendSuccess, createHttpError } from '../utils/apiResponse.js'
 import 'dotenv/config'
 
 export function adminLoginController(request, response) {
-  if (!process.env.ADMIN_PASSWORD || request.body.password !== process.env.ADMIN_PASSWORD) return response.status(401).json({ error: 'Invalid admin password.' })
-  const session = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '12h' })
-  response.cookie('admin_session', session, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 12 * 60 * 60 * 1000 })
-  return sendSuccess(response, { message: 'Signed in.' })
+  if (
+    !process.env.ADMIN_PASSWORD ||
+    request.body.password !== process.env.ADMIN_PASSWORD
+  ) {
+    return response.status(401).json({
+      error: 'Invalid admin password.',
+    })
+  }
+
+  const session = jwt.sign(
+    { role: 'admin' },
+    process.env.JWT_SECRET,
+    { expiresIn: '12h' }
+  )
+
+  response.cookie('admin_session', session, {
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+    path: '/',
+    maxAge: 12 * 60 * 60 * 1000,
+  })
+
+  return sendSuccess(response, {
+    message: 'Signed in.',
+  })
+}
+
+export function adminLogoutController(_request, response) {
+  response.clearCookie('admin_session', {
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+    path: '/',
+  })
+
+  return sendSuccess(response, {
+    message: 'Signed out.',
+  })
 }
 
 export function adminLogoutController(_request, response) {

@@ -3,10 +3,29 @@ import 'dotenv/config'
 
 export function requireAdmin(request, response, next) {
   try {
-    const session = jwt.verify(request.cookies.admin_session, process.env.JWT_SECRET)
-    if (session.role !== 'admin') throw new Error('Invalid admin session')
+    const session = request.cookies?.admin_session
+
+    if (!session) {
+      return response.status(401).json({
+        error: 'Admin authentication required.',
+      })
+    }
+
+    const decoded = jwt.verify(
+      session,
+      process.env.JWT_SECRET
+    )
+
+    if (decoded.role !== 'admin') {
+      return response.status(401).json({
+        error: 'Invalid admin session.',
+      })
+    }
+
     next()
   } catch {
-    response.status(401).json({ error: 'Admin authentication required.' })
+    return response.status(401).json({
+      error: 'Admin authentication required.',
+    })
   }
 }
