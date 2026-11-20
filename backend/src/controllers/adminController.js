@@ -3,6 +3,7 @@ import { pool } from '../config/database.js'
 import { sendSuccess, createHttpError } from '../utils/apiResponse.js'
 import 'dotenv/config'
 
+// Admin Login
 export function adminLoginController(request, response) {
   if (
     !process.env.ADMIN_PASSWORD ||
@@ -32,6 +33,7 @@ export function adminLoginController(request, response) {
   })
 }
 
+// Admin Logout
 export function adminLogoutController(_request, response) {
   response.clearCookie('admin_session', {
     httpOnly: true,
@@ -45,29 +47,68 @@ export function adminLogoutController(_request, response) {
   })
 }
 
-export function adminLogoutController(_request, response) {
-  response.clearCookie('admin_session')
-  return sendSuccess(response, { message: 'Signed out.' })
-}
-
+// Get Admin Dashboard Overview
 export async function getOverviewController(_request, response) {
-  const result = await pool.query(`SELECT (SELECT COUNT(*) FROM voters) AS registered_voters, (SELECT COUNT(*) FROM voters WHERE has_voted) AS students_voted, (SELECT COUNT(*) FROM votes) AS total_votes, (SELECT COUNT(*) FROM artworks WHERE is_active) AS active_artworks`)
+  const result = await pool.query(`
+    SELECT
+      (SELECT COUNT(*) FROM voters) AS registered_voters,
+      (SELECT COUNT(*) FROM voters WHERE has_voted) AS students_voted,
+      (SELECT COUNT(*) FROM votes) AS total_votes,
+      (SELECT COUNT(*) FROM artworks WHERE is_active) AS active_artworks
+  `)
+
   return response.json(result.rows[0])
 }
 
+// Get Artwork Leaderboard
 export async function getLeaderboardController(_request, response) {
-  const result = await pool.query(`SELECT a.id, a.art_code, a.title, a.image_url, a.is_active, COUNT(v.id)::int AS total_votes FROM artworks a LEFT JOIN votes v ON v.artwork_id = a.id WHERE a.is_active = TRUE GROUP BY a.id ORDER BY total_votes DESC, a.art_code`)
+  const result = await pool.query(`
+    SELECT
+      a.id,
+      a.art_code,
+      a.title,
+      a.image_url,
+      a.is_active,
+      COUNT(v.id)::int AS total_votes
+    FROM artworks a
+    LEFT JOIN votes v ON v.artwork_id = a.id
+    WHERE a.is_active = TRUE
+    GROUP BY a.id
+    ORDER BY total_votes DESC, a.art_code
+  `)
+
   return response.json(result.rows)
 }
 
+// Update Voting Status
 export async function updateVotingStatusController(request, response) {
-  if (typeof request.body.isOpen !== 'boolean') throw createHttpError('isOpen must be a boolean.', 400)
-  await pool.query('UPDATE voting_settings SET is_open = $1, updated_at = NOW() WHERE id = 1', [request.body.isOpen])
-  return sendSuccess(response, { message: 'Voting status updated.' })
+  if (typeof request.body.isOpen !== 'boolean') {
+    throw createHttpError('isOpen must be a boolean.', 400)
+  }
+
+  await pool.query(
+    'UPDATE voting_settings SET is_open = $1, updated_at = NOW() WHERE id = 1',
+    [request.body.isOpen]
+  )
+
+  return sendSuccess(response, {
+    message: 'Voting status updated.',
+  })
 }
 
+// Delete Artwork (Soft Delete)
 export async function deleteArtworkController(request, response) {
-  const result = await pool.query('UPDATE artworks SET is_active = FALSE, updated_at = NOW() WHERE id = $1 RETURNING *', [request.params.id])
-  if (!result.rows[0]) throw createHttpError('Artwork not found.', 404)
+  const result = await pool.query(
+    `UPDATE artworks
+     SET is_active = FALSE, updated_at = NOW()
+     WHERE id = $1
+     RETURNING *`,
+    [request.params.id]
+  )
+
+  if (!result.rows[0]) {
+    throw createHttpError('Artwork not found.', 404)
+  }
+
   return response.json(result.rows[0])
 }
