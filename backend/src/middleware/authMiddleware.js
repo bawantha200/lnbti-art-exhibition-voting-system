@@ -3,11 +3,31 @@ import 'dotenv/config'
 
 export function requireStudent(request, response, next) {
   try {
-    const session = jwt.verify(request.cookies.student_session, process.env.JWT_SECRET)
-    if (!session.verified || !session.email) throw new Error('Invalid student session')
+    const sessionToken = request.cookies?.student_session
+
+    if (!sessionToken) {
+      return response.status(401).json({
+        error: 'Your voting session has expired.',
+      })
+    }
+
+    const session = jwt.verify(
+      sessionToken,
+      process.env.JWT_SECRET
+    )
+
+    if (!session.verified || !session.email) {
+      return response.status(401).json({
+        error: 'Your voting session has expired.',
+      })
+    }
+
     request.student = session
+
     next()
   } catch {
-    response.status(401).json({ error: 'Your voting session has expired.' })
+    return response.status(401).json({
+      error: 'Your voting session has expired.',
+    })
   }
 }
