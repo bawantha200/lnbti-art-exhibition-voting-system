@@ -139,14 +139,20 @@
   font: 19px var(--mono);
 }
 
-/* Artwork image */
+/* Artwork image - normal thumbnail */
 
 .leaderboard-artwork-image {
+  position: relative;
+  display: block;
   width: 82px;
   height: 82px;
   flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   overflow: hidden;
   background: #e9e4db;
+  cursor: zoom-in;
 }
 
 .leaderboard-artwork-image img {
@@ -154,6 +160,32 @@
   height: 100%;
   display: block;
   object-fit: cover;
+}
+
+/* Zoom icon - visible on hover */
+
+.image-zoom-hint {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  background: rgba(23, 23, 23, 0.75);
+  color: white;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.leaderboard-artwork-image:hover .image-zoom-hint,
+.leaderboard-artwork-image:focus-visible .image-zoom-hint {
+  opacity: 1;
+}
+
+.leaderboard-artwork-image:focus-visible {
+  outline: 2px solid #b79445;
+  outline-offset: 3px;
 }
 
 /* Artwork details */
@@ -260,7 +292,89 @@
   gap: 8px;
 }
 
-/* Welcome screen leaderboard button */
+/* =====================================
+   FULL-SIZE IMAGE PREVIEW
+   Opens only after clicking thumbnail
+===================================== */
+
+.artwork-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 55px 25px 25px;
+  background: rgba(10, 10, 10, 0.95);
+  animation: lightbox-fade 0.2s ease;
+}
+
+.lightbox-content {
+  width: min(100%, 1100px);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.lightbox-content img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 150px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  width: 45px;
+  height: 45px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.lightbox-caption {
+  color: white;
+  text-align: center;
+}
+
+.lightbox-caption span {
+  color: #d3a29e;
+  font: 11px var(--mono);
+}
+
+.lightbox-caption h3 {
+  margin: 5px 0 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+@keyframes lightbox-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* =====================================
+   Welcome screen leaderboard button
+===================================== */
 
 .leaderboard-home-button {
   display: inline-flex;
@@ -370,6 +484,28 @@
   .leaderboard-home-button {
     width: 100%;
     max-width: 260px;
+  }
+
+  /* Mobile image preview */
+
+  .artwork-lightbox {
+    padding: 55px 12px 20px;
+  }
+
+  .lightbox-content img {
+    max-width: 100%;
+    max-height: calc(100vh - 130px);
+  }
+
+  .lightbox-close {
+    top: 10px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .lightbox-caption h3 {
+    font-size: 15px;
   }
 }
 
