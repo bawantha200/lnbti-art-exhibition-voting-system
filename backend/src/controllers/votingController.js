@@ -39,3 +39,37 @@ export async function getPublicLeaderboardController(_request, response) {
 
   return response.json(result.rows)
 }
+
+
+export async function getPublicLeaderboardController(_request, response) {
+  const result = await pool.query(`
+    WITH artwork_votes AS (
+      SELECT
+        a.id,
+        a.art_code,
+        a.title,
+        a.image_url,
+        COUNT(v.id)::int AS total_votes
+      FROM artworks a
+      LEFT JOIN votes v ON v.artwork_id = a.id
+      WHERE a.is_active = TRUE
+      GROUP BY a.id
+    )
+    SELECT
+      id,
+      art_code,
+      title,
+      image_url,
+      CASE
+        WHEN SUM(total_votes) OVER() = 0 THEN 0
+        ELSE ROUND(
+          total_votes * 100.0 / SUM(total_votes) OVER(),
+          1
+        )
+      END AS percentage
+    FROM artwork_votes
+    ORDER BY total_votes DESC, art_code ASC
+  `)
+
+  return response.json(result.rows)
+}

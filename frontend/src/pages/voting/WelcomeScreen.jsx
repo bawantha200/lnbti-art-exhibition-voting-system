@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   ArrowRight,
   ShieldCheck,
@@ -8,47 +8,34 @@ import {
 } from 'lucide-react'
 
 import BrandMark from '../../components/BrandMark'
-import { apiRequest, assetUrl } from '../../services/api'
+import { apiRequest, assetUrl } from '../../services/api.js'
 import './LiveLeaderboard.css'
 
 function WelcomeScreen({ onStart }) {
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
-  const [leaderboardError, setLeaderboardError] = useState(false)
+  const [error, setError] = useState(false)
 
-  useEffect(() => {
-    let isMounted = true
-
-    const fetchLeaderboard = async () => {
-      try {
-        const data = await apiRequest('/leaderboard')
-
-        if (isMounted) {
-          setLeaderboard(Array.isArray(data) ? data : [])
-          setLeaderboardError(false)
-        }
-      } catch (error) {
-        console.error('Leaderboard loading failed:', error)
-
-        if (isMounted) {
-          setLeaderboardError(true)
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    fetchLeaderboard()
-
-    const interval = setInterval(fetchLeaderboard, 4000)
-
-    return () => {
-      isMounted = false
-      clearInterval(interval)
+  const fetchLeaderboard = useCallback(async () => {
+    try {
+      const data = await apiRequest('/leaderboard')
+      setLeaderboard(Array.isArray(data) ? data : [])
+      setError(false)
+    } catch (err) {
+      console.error('Leaderboard loading failed:', err)
+      setError(true)
+    } finally {
+      setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    fetchLeaderboard()
+
+    const interval = setInterval(fetchLeaderboard, 5000)
+
+    return () => clearInterval(interval)
+  }, [fetchLeaderboard])
 
   return (
     <>
@@ -106,102 +93,87 @@ function WelcomeScreen({ onStart }) {
         </div>
       </section>
 
-      {/* Public Live Leaderboard */}
-      <section className="live-leaderboard-section">
-        <div className="leaderboard-container">
-
-          <div className="leaderboard-heading">
-            <div>
-              <div className="leaderboard-eyebrow">
-                <Trophy size={15} />
-                STUDENT ART COMPETITION
-              </div>
-
-              <h2>Live Leaderboard</h2>
-
-              <p>
-                Discover the artworks leading the competition.
-              </p>
+      {/* Live Leaderboard */}
+      <section className="live-leaderboard">
+        <div className="leaderboard-heading">
+          <div>
+            <div className="leaderboard-eyebrow">
+              <Trophy size={15} />
+              LIVE RESULTS
             </div>
 
-            <div className="live-status">
-              <span className="live-indicator" />
-              LIVE
-            </div>
+            <h2>People's Choice</h2>
+
+            <p>
+              Discover the artworks currently leading the exhibition.
+            </p>
           </div>
 
-          <div className="leaderboard-update">
-            <RefreshCw size={13} />
-            Automatically updates every 4 seconds
+          <div className="live-indicator">
+            <span className="live-dot" />
+            LIVE
           </div>
+        </div>
 
-          {loading ? (
-            <div className="leaderboard-message">
-              Loading leaderboard...
-            </div>
-          ) : leaderboardError ? (
-            <div className="leaderboard-message">
-              Unable to load leaderboard. Please try again later.
-            </div>
-          ) : leaderboard.length === 0 ? (
-            <div className="leaderboard-message">
-              No active artworks available yet.
-            </div>
-          ) : (
-            <div className="leaderboard-list">
-              {leaderboard.map((artwork, index) => (
-                <div
-                  className={`leaderboard-item ${index < 3 ? `rank-${index + 1}` : ''}`}
-                  key={artwork.id}
-                >
-                  <div className="leaderboard-rank">
-                    {index === 0 ? (
-                      <Trophy size={21} />
-                    ) : (
-                      String(index + 1).padStart(2, '0')
-                    )}
-                  </div>
+        {loading ? (
+          <div className="leaderboard-message">
+            <RefreshCw className="loading-icon" size={22} />
+            <span>Loading leaderboard...</span>
+          </div>
+        ) : error ? (
+          <div className="leaderboard-message">
+            Unable to load leaderboard. Please try again later.
+          </div>
+        ) : leaderboard.length === 0 ? (
+          <div className="leaderboard-message">
+            No artworks are available yet.
+          </div>
+        ) : (
+          <div className="leaderboard-list">
+            {leaderboard.map((artwork, index) => (
+              <div className="leaderboard-item" key={artwork.id}>
+                <div className="leaderboard-rank">
+                  {String(index + 1).padStart(2, '0')}
+                </div>
 
-                  <div className="leaderboard-artwork-image">
-                    {artwork.image_url ? (
-                      <img
-                        src={assetUrl(artwork.image_url)}
-                        alt={artwork.title}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="leaderboard-no-image">
-                        No Image
-                      </div>
-                    )}
-                  </div>
+                <div className="leaderboard-artwork-image">
+                  <img
+                    src={assetUrl(artwork.image_url)}
+                    alt={artwork.title}
+                  />
+                </div>
 
-                  <div className="leaderboard-artwork-info">
-                    <span className="leaderboard-art-code">
-                      {artwork.art_code}
-                    </span>
+                <div className="leaderboard-artwork-info">
+                  <span className="leaderboard-art-code">
+                    {artwork.art_code}
+                  </span>
 
-                    <h3>{artwork.title}</h3>
-                  </div>
+                  <h3>{artwork.title}</h3>
 
-                  <div className="leaderboard-votes">
-                    <strong>
-                      {Number(artwork.total_votes).toLocaleString()}
-                    </strong>
-                    <span>
-                      {Number(artwork.total_votes) === 1 ? 'VOTE' : 'VOTES'}
-                    </span>
+                  <div className="leaderboard-progress">
+                    <div
+                      className="leaderboard-progress-fill"
+                      style={{
+                        width: `${Number(artwork.percentage) || 0}%`,
+                      }}
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
 
-          <div className="leaderboard-footer">
-            <span>Presented by LNBTI Japanese Club</span>
-            <span>2026 · Art Exhibition & Competition</span>
+                <div className="leaderboard-percentage">
+                  {Number(artwork.percentage).toFixed(1)}%
+                </div>
+              </div>
+            ))}
           </div>
+        )}
 
+        <div className="leaderboard-footer">
+          <span>
+            <RefreshCw size={13} />
+            Automatically updates every 5 seconds
+          </span>
+          <span>LNBTI Japanese Club</span>
         </div>
       </section>
     </>
