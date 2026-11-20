@@ -21,25 +21,8 @@ export async function resetVotesController(_request, response) {
   await resetVotingData()
   return sendSuccess(response, { message: 'Voting data reset.' })
 }
+
 // Get Public Live Leaderboard
-export async function getPublicLeaderboardController(_request, response) {
-  const result = await pool.query(`
-    SELECT
-      a.id,
-      a.art_code,
-      a.title,
-      a.image_url,
-      COUNT(v.id)::int AS total_votes
-    FROM artworks a
-    LEFT JOIN votes v ON v.artwork_id = a.id
-    WHERE a.is_active = TRUE
-    GROUP BY a.id
-    ORDER BY total_votes DESC, a.art_code ASC
-  `)
-
-  return response.json(result.rows)
-}
-
 
 export async function getPublicLeaderboardController(_request, response) {
   const result = await pool.query(`
