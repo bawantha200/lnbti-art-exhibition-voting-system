@@ -14,25 +14,26 @@ function WelcomeScreen({ onStart }) {
   return (
     <section className="welcome-page">
       <div className="welcome-art-panel">
-        <div className="vertical-label">
-          日本美術展覧会・コンテスト · 2026
-        </div>
+  <img
+    src="/cover3.jpg"
+    alt="Art Exhibition"
+    className="welcome-art-image"
+  />
 
-        <div className="circle-art">
-          <span>静</span>
-        </div>
+  <div className="welcome-image-overlay" />
 
-        <div className="brush-stroke brush-one" />
-        <div className="brush-stroke brush-two" />
+  <div className="vertical-label">
+    日本美術展覧会・コンテスト · 2026
+  </div>
 
-        <div className="art-caption">
-          <span>01</span>
-          <span>THE ART OF<br />PAUSE</span>
-        </div>
-      </div>
+  <div className="art-caption">
+    <span>01</span>
+    <span>THE ART OF<br />PAUSE</span>
+  </div>
+</div>
 
       <div className="welcome-copy">
-        <BrandMark />
+        {/* <BrandMark /> */}
 
         <div className="eyebrow">
           <Sparkles size={14} />
