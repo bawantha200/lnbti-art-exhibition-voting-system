@@ -1,0 +1,278 @@
+
+.live-leaderboard-section {
+  width: 100%;
+  padding: 75px 24px;
+  background: #f7f5f0;
+  color: #24231f;
+}
+
+.leaderboard-container {
+  width: 100%;
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+.leaderboard-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.leaderboard-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9a7041;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.leaderboard-heading h2 {
+  margin: 12px 0 8px;
+  font-family: Georgia, serif;
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 400;
+}
+
+.leaderboard-heading p {
+  margin: 0;
+  color: #77736c;
+  font-size: 14px;
+}
+
+.live-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border: 1px solid #d9e8d8;
+  border-radius: 30px;
+  color: #387b45;
+  background: #f0f7ef;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b9b52;
+  box-shadow: 0 0 0 4px #dcefdc;
+  animation: leaderboard-pulse 1.5s infinite;
+}
+
+@keyframes leaderboard-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.leaderboard-update {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 25px 0 15px;
+  color: #89847c;
+  font-size: 11px;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 15px 20px;
+  min-height: 100px;
+  background: #fff;
+  border: 1px solid #eae7e0;
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.leaderboard-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.05);
+}
+
+.leaderboard-item.rank-1 {
+  border-color: #d9bd7d;
+  background: #fffdf7;
+}
+
+.leaderboard-rank {
+  width: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #89847c;
+  font-family: Georgia, serif;
+  font-size: 19px;
+}
+
+.rank-1 .leaderboard-rank {
+  color: #b58a37;
+}
+
+.rank-2 .leaderboard-rank {
+  color: #858585;
+}
+
+.rank-3 .leaderboard-rank {
+  color: #a66f49;
+}
+
+.leaderboard-artwork-image {
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #eeeae3;
+}
+
+.leaderboard-artwork-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.leaderboard-no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #89847c;
+  font-size: 10px;
+}
+
+.leaderboard-artwork-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.leaderboard-art-code {
+  color: #a1845b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.leaderboard-artwork-info h3 {
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
+  color: #302e29;
+  font-family: Georgia, serif;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.leaderboard-votes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.leaderboard-votes strong {
+  color: #302e29;
+  font-family: Georgia, serif;
+  font-size: 23px;
+}
+
+.leaderboard-votes span {
+  color: #969087;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.leaderboard-message {
+  padding: 45px 20px;
+  text-align: center;
+  color: #77736c;
+  background: #fff;
+  border: 1px solid #eae7e0;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.leaderboard-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 25px;
+  padding-top: 18px;
+  border-top: 1px solid #e5e1d9;
+  color: #99938a;
+  font-size: 10px;
+}
+
+@media (max-width: 600px) {
+  .live-leaderboard-section {
+    padding: 50px 16px;
+  }
+
+  .leaderboard-heading {
+    align-items: flex-start;
+  }
+
+  .leaderboard-heading h2 {
+    font-size: 34px;
+  }
+
+  .leaderboard-heading p {
+    max-width: 230px;
+    line-height: 1.6;
+  }
+
+  .live-status {
+    padding: 7px 10px;
+    font-size: 9px;
+  }
+
+  .leaderboard-item {
+    gap: 11px;
+    padding: 12px;
+    min-height: 85px;
+  }
+
+  .leaderboard-rank {
+    width: 25px;
+    font-size: 15px;
+  }
+
+  .leaderboard-artwork-image {
+    width: 54px;
+    height: 54px;
+  }
+
+  .leaderboard-artwork-info h3 {
+    font-size: 14px;
+  }
+
+  .leaderboard-votes strong {
+    font-size: 18px;
+  }
+
+  .leaderboard-votes span {
+    font-size: 8px;
+  }
+
+  .leaderboard-footer {
+    flex-direction: column;
+    font-size: 9px;
+  }
+}
