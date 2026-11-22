@@ -69,11 +69,12 @@ function WelcomeScreen({ onStart }) {
         </div>
 
         <div className="welcome-footer">
-          <span>Presented by LNBTI Japanese Club</span>
-          <span>
-            Scroll to explore <span className="scroll-line" />
-          </span>
-        </div>
+  <div className="welcome-footer-credit">
+    <span>Presented by LNBTI Japanese Club</span>
+    <span>Originally Designed & Developed by Bawantha Madubhashana</span>
+    <span>© 2026 Bawantha Madubhashana</span>
+  </div>
+</div>
       </div>
     </section>
   )
