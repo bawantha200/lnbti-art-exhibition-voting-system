@@ -14,6 +14,7 @@ import {
   getLeaderboardController,
   getArtworkVotesController,
   getOverviewController,
+  getVotersController,
   updateVotingStatusController,
   deleteArtworkController,
   adminLoginController,
@@ -39,6 +40,9 @@ router.post('/logout', asyncHandler(adminLogoutController))
 
 router.get('/overview', asyncHandler(getOverviewController))
 router.get('/leaderboard', asyncHandler(getLeaderboardController))
+
+// Voter Details
+router.get('/voters', asyncHandler(getVotersController))
 
 router.get(
   '/artworks/:id/votes',

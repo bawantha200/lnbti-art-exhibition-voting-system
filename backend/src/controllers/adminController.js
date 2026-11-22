@@ -66,8 +66,72 @@ export async function getOverviewController(_request, response) {
   return response.json(result.rows[0])
 }
 
-// Get Artwork Leaderboard
+// Get Voter Details
+export async function getVotersController(_request, response) {
+  const [votersResult, summaryResult] = await Promise.all([
+    pool.query(`
+      SELECT
+        v.id,
+        v.email,
+        v.created_at,
+        v.verified_at,
+        v.has_voted,
+        v.voted_at,
 
+        COUNT(vt.id)::int AS vote_count,
+
+        COALESCE(
+          JSON_AGG(
+            JSON_BUILD_OBJECT(
+              'artwork_id', a.id,
+              'art_code', a.art_code,
+              'title', a.title,
+              'vote_created_at', vt.created_at
+            )
+            ORDER BY vt.created_at
+          ) FILTER (WHERE vt.id IS NOT NULL),
+          '[]'::json
+        ) AS votes
+
+      FROM voters v
+      LEFT JOIN votes vt ON vt.voter_email = v.email
+      LEFT JOIN artworks a ON a.id = vt.artwork_id
+
+      GROUP BY v.id
+      ORDER BY v.created_at DESC
+    `),
+
+    pool.query(`
+      SELECT
+        COUNT(*)::int AS total_voters,
+
+        COUNT(*) FILTER (
+          WHERE verified_at IS NOT NULL
+        )::int AS verified_voters,
+
+        COUNT(*) FILTER (
+          WHERE verified_at IS NULL
+        )::int AS unverified_voters,
+
+        COUNT(*) FILTER (
+          WHERE has_voted = TRUE
+        )::int AS voted_voters,
+
+        COUNT(*) FILTER (
+          WHERE has_voted = FALSE
+        )::int AS not_voted_voters
+
+      FROM voters
+    `),
+  ])
+
+  return response.json({
+    summary: summaryResult.rows[0],
+    voters: votersResult.rows,
+  })
+}
+
+// Get Artwork Leaderboard
 export async function getLeaderboardController(_request, response) {
   const result = await pool.query(`
     SELECT
@@ -87,7 +151,6 @@ export async function getLeaderboardController(_request, response) {
 
   return response.json(result.rows)
 }
-
 
 // Update Voting Status
 export async function updateVotingStatusController(request, response) {
@@ -122,7 +185,7 @@ export async function deleteArtworkController(request, response) {
   return response.json(result.rows[0])
 }
 
-
+// Get Artwork Votes
 export async function getArtworkVotesController(request, response) {
   const { id } = request.params
 
@@ -155,4 +218,3 @@ export async function getArtworkVotesController(request, response) {
     voters: result.rows,
   })
 }
-

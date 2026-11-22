@@ -9,6 +9,7 @@ import {
   Palette,
   Power,
   Settings,
+  Users,
 } from 'lucide-react'
 
 import { apiRequest } from '../../services/api.js'
@@ -23,6 +24,7 @@ import AdminLogin from './AdminLogin'
 import Overview from './Overview'
 import ArtworkManagement from './ArtworkManagement'
 import Leaderboard from './Leaderboard'
+import VoterDetails from './VoterDetails'
 
 // Artwork visual styles
 const artStyles = [
@@ -213,22 +215,22 @@ function AdminPage() {
   }
 
   // Edit artwork with FormData
-const editArtwork = async (id, formData) => {
-  setAdminError('')
+  const editArtwork = async (id, formData) => {
+    setAdminError('')
 
-  try {
-    await apiRequest(`/admin/artworks/${id}`, {
-      method: 'PATCH',
-      body: formData,
-    })
+    try {
+      await apiRequest(`/admin/artworks/${id}`, {
+        method: 'PATCH',
+        body: formData,
+      })
 
-    await loadDashboard()
-    return true
-  } catch (requestError) {
-    setAdminError(requestError.message)
-    return false
+      await loadDashboard()
+      return true
+    } catch (requestError) {
+      setAdminError(requestError.message)
+      return false
+    }
   }
-}
 
   // Search artworks
   const filtered = useMemo(
@@ -293,6 +295,14 @@ const editArtwork = async (id, formData) => {
             label="Leaderboard"
             value="leaderboard"
           />
+
+          <AdminNav
+            active={active}
+            setActive={setActive}
+            icon={Users}
+            label="Voter Details"
+            value="voters"
+          />
         </nav>
 
         <div className="sidebar-bottom">
@@ -337,7 +347,9 @@ const editArtwork = async (id, formData) => {
                 ? 'Good morning, admin.'
                 : active === 'artworks'
                   ? 'Artwork collection'
-                  : 'Live leaderboard'}
+                  : active === 'leaderboard'
+                    ? 'Live leaderboard'
+                    : 'Voter details'}
             </h1>
           </div>
 
@@ -392,6 +404,10 @@ const editArtwork = async (id, formData) => {
 
         {active === 'leaderboard' && (
           <Leaderboard artworks={leaderboard} />
+        )}
+
+        {active === 'voters' && (
+          <VoterDetails />
         )}
       </div>
 
