@@ -266,7 +266,7 @@ function AdminPage() {
         <BrandMark compact />
 
         <div className="admin-event">
-          <span className="live-dot" />
+          <span className="live-dot" />{' '}
           Live event
           <strong>Art Competition 2026</strong>
         </div>
