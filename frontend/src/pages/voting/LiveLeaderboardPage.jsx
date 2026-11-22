@@ -1,19 +1,17 @@
+
 import { useCallback, useEffect, useState } from 'react'
 import {
-  ArrowLeft,
   RefreshCw,
   Trophy,
   X,
   ZoomIn,
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 
+import BrandMark from '../../components/BrandMark'
 import { apiRequest, assetUrl } from '../../services/api.js'
 import './LiveLeaderboard.css'
 
 function LiveLeaderboardPage() {
-  const navigate = useNavigate()
-
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -36,6 +34,7 @@ function LiveLeaderboardPage() {
     fetchLeaderboard()
 
     const interval = setInterval(fetchLeaderboard, 5000)
+
     return () => clearInterval(interval)
   }, [fetchLeaderboard])
 
@@ -59,15 +58,13 @@ function LiveLeaderboardPage() {
 
   return (
     <main className="leaderboard-page">
-      <header className="leaderboard-page-header">
-        <button
-          type="button"
-          className="leaderboard-back-button"
-          onClick={() => navigate('/')}
-        >
-          <ArrowLeft size={17} />
-          Back to Home
-        </button>
+      <header className="topbar">
+        <BrandMark compact />
+
+        <div className="topbar-meta">
+          <span className="live-dot" />
+          Live leaderboard · 2026 Exhibition
+        </div>
       </header>
 
       <section className="live-leaderboard">
@@ -79,7 +76,10 @@ function LiveLeaderboardPage() {
             </div>
 
             <h2>People's Choice</h2>
-            <p>Discover the artworks currently leading the exhibition.</p>
+
+            <p>
+              Discover the artworks currently leading the exhibition.
+            </p>
           </div>
 
           <div className="live-indicator">
@@ -96,6 +96,7 @@ function LiveLeaderboardPage() {
         ) : error ? (
           <div className="leaderboard-message">
             Unable to load leaderboard. Please try again later.
+
             <button
               type="button"
               className="leaderboard-retry-button"
@@ -123,13 +124,19 @@ function LiveLeaderboardPage() {
                   <button
                     type="button"
                     className="leaderboard-artwork-image"
-                    onClick={() => setSelectedArtwork({
-                      ...artwork,
-                      imageUrl,
-                    })}
+                    onClick={() =>
+                      setSelectedArtwork({
+                        ...artwork,
+                        imageUrl,
+                      })
+                    }
                     aria-label={`View ${artwork.title} image`}
                   >
-                    <img src={imageUrl} alt={artwork.title} />
+                    <img
+                      src={imageUrl}
+                      alt={artwork.title}
+                    />
+
                     <span className="image-zoom-hint">
                       <ZoomIn size={18} />
                     </span>
@@ -146,7 +153,10 @@ function LiveLeaderboardPage() {
                       <div
                         className="leaderboard-progress-fill"
                         style={{
-                          width: `${Math.min(100, Math.max(0, percentage))}%`,
+                          width: `${Math.min(
+                            100,
+                            Math.max(0, percentage)
+                          )}%`,
                         }}
                       />
                     </div>
@@ -162,10 +172,6 @@ function LiveLeaderboardPage() {
         )}
 
         <div className="leaderboard-footer">
-          {/* <span>
-            <RefreshCw size={13} />
-            Automatically updates every 5 seconds
-          </span> */}
           <span>LNBTI Japanese Club</span>
         </div>
       </section>
