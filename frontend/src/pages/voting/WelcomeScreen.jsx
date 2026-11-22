@@ -69,12 +69,12 @@ function WelcomeScreen({ onStart }) {
         </div>
 
         <div className="welcome-footer">
-  <div className="welcome-footer-credit">
-    <span>Presented by LNBTI Japanese Club</span>
-    <span>Originally Designed & Developed by Bawantha Madubhashana</span>
-    <span>© 2026 Bawantha Madubhashana</span>
-  </div>
-</div>
+          <div className="welcome-footer-credit">
+            <span>Presented by LNBTI Japanese Club</span>
+            <span>Originally Designed & Developed by Bawantha Madubhashana</span>
+            <span>© 2026 Bawantha Madubhashana</span>
+          </div>
+        </div>
       </div>
     </section>
   )
