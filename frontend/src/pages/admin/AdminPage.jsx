@@ -212,23 +212,23 @@ function AdminPage() {
     }
   }
 
-  // Edit artwork title
-  const editArtwork = async (artwork) => {
-    const title = window.prompt('Artwork title', artwork.title)
+  // Edit artwork with FormData
+const editArtwork = async (id, formData) => {
+  setAdminError('')
 
-    if (title === null) return
+  try {
+    await apiRequest(`/admin/artworks/${id}`, {
+      method: 'PATCH',
+      body: formData,
+    })
 
-    try {
-      await apiRequest(`/admin/artworks/${artwork.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ title }),
-      })
-
-      await loadDashboard()
-    } catch (requestError) {
-      setAdminError(requestError.message)
-    }
+    await loadDashboard()
+    return true
+  } catch (requestError) {
+    setAdminError(requestError.message)
+    return false
   }
+}
 
   // Search artworks
   const filtered = useMemo(

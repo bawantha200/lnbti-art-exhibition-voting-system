@@ -31,13 +31,25 @@ function isRealImage(file) {
 
 async function uploadToCloudinary(file) {
   const base64Image = file.buffer.toString('base64')
-
   const dataUri = `data:${file.mimetype};base64,${base64Image}`
 
   return cloudinary.uploader.upload(dataUri, {
     folder: 'lnbti-art-exhibition/artworks',
     resource_type: 'image',
   })
+}
+
+function getCloudinaryPublicId(imageUrl) {
+  try {
+    const pathname = new URL(imageUrl).pathname
+    const match = pathname.match(
+      /\/image\/upload\/(?:v\d+\/)?(.+)\.[^/.]+$/
+    )
+
+    return match?.[1] || null
+  } catch {
+    return null
+  }
 }
 
 export async function listActiveArtworks(_request, response) {
@@ -75,25 +87,18 @@ export async function createArtworkController(request, response) {
     )
   }
 
-  // Upload image to Cloudinary
   const uploadedImage = await uploadToCloudinary(request.file)
 
   try {
-    // Save Cloudinary URL in Neon database
     const result = await pool.query(
       `INSERT INTO artworks (art_code, title, image_url)
        VALUES ($1, $2, $3)
        RETURNING *`,
-      [
-        artCode,
-        title || null,
-        uploadedImage.secure_url,
-      ]
+      [artCode, title || null, uploadedImage.secure_url]
     )
 
     return sendSuccess(response, result.rows[0], 201)
   } catch (error) {
-    // Remove Cloudinary image if database insertion fails
     await cloudinary.uploader
       .destroy(uploadedImage.public_id, {
         resource_type: 'image',
@@ -104,37 +109,134 @@ export async function createArtworkController(request, response) {
   }
 }
 
+// Update artwork details and optionally replace its image
 export async function updateArtworkController(request, response) {
   const { id } = request.params
-  const { title, isActive } = request.body
+  const { title, artCode, isActive } = request.body
+
+  if (!/^\d+$/.test(id)) {
+    throw createHttpError('Invalid artwork ID.', 400)
+  }
 
   if (title !== undefined && typeof title !== 'string') {
     throw createHttpError('title must be text.', 400)
   }
 
-  if (isActive !== undefined && typeof isActive !== 'boolean') {
-    throw createHttpError('isActive must be a boolean.', 400)
+  if (artCode !== undefined && typeof artCode !== 'string') {
+    throw createHttpError('artCode must be text.', 400)
   }
 
-  const result = await pool.query(
-    `UPDATE artworks
-     SET title = COALESCE($1, title),
-         is_active = COALESCE($2, is_active),
-         updated_at = NOW()
-     WHERE id = $3
-     RETURNING *`,
-    [
-      typeof title === 'string' ? title.trim().slice(0, 160) : null,
-      isActive,
-      id,
-    ]
+  let parsedIsActive
+
+  if (isActive !== undefined) {
+    if (typeof isActive === 'boolean') {
+      parsedIsActive = isActive
+    } else if (isActive === 'true' || isActive === 'false') {
+      parsedIsActive = isActive === 'true'
+    } else {
+      throw createHttpError('isActive must be true or false.', 400)
+    }
+  }
+
+  const normalizedCode =
+    artCode === undefined
+      ? undefined
+      : artCode.trim().toUpperCase()
+
+  if (
+    normalizedCode !== undefined &&
+    !/^ART-\d{2,}$/.test(normalizedCode)
+  ) {
+    throw createHttpError(
+      'Use a valid artwork code such as ART-01.',
+      400
+    )
+  }
+
+  const normalizedTitle =
+    title === undefined
+      ? undefined
+      : title.trim().slice(0, 160)
+
+  if (
+    normalizedTitle === undefined &&
+    normalizedCode === undefined &&
+    parsedIsActive === undefined &&
+    !request.file
+  ) {
+    throw createHttpError('No artwork changes were provided.', 400)
+  }
+
+  if (request.file && !isRealImage(request.file)) {
+    throw createHttpError(
+      'The uploaded file is not a supported JPEG, PNG, or WEBP image.',
+      400
+    )
+  }
+
+  const existingResult = await pool.query(
+    'SELECT * FROM artworks WHERE id = $1',
+    [id]
   )
 
-  if (!result.rows[0]) {
+  const existingArtwork = existingResult.rows[0]
+
+  if (!existingArtwork) {
     throw createHttpError('Artwork not found.', 404)
   }
 
-  return response.json(result.rows[0])
+  let uploadedImage = null
+
+  if (request.file) {
+    uploadedImage = await uploadToCloudinary(request.file)
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE artworks
+       SET art_code = COALESCE($1, art_code),
+           title = COALESCE($2, title),
+           is_active = COALESCE($3, is_active),
+           image_url = COALESCE($4, image_url),
+           updated_at = NOW()
+       WHERE id = $5
+       RETURNING *`,
+      [
+        normalizedCode ?? null,
+        normalizedTitle ?? null,
+        parsedIsActive ?? null,
+        uploadedImage?.secure_url ?? null,
+        id,
+      ]
+    )
+
+    // Remove the previous Cloudinary image after a successful replacement.
+    if (uploadedImage && existingArtwork.image_url) {
+      const oldPublicId = getCloudinaryPublicId(
+        existingArtwork.image_url
+      )
+
+      if (oldPublicId) {
+        await cloudinary.uploader
+          .destroy(oldPublicId, { resource_type: 'image' })
+          .catch((error) => {
+            console.error('Old artwork image cleanup failed:', error)
+          })
+      }
+    }
+
+    return response.json(result.rows[0])
+  } catch (error) {
+    if (uploadedImage) {
+      await cloudinary.uploader
+        .destroy(uploadedImage.public_id, {
+          resource_type: 'image',
+        })
+        .catch(() => {})
+    }
+
+    throw error
+  }
 }
 
 export async function deactivateArtworkController(request, response) {

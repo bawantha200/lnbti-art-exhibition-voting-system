@@ -67,6 +67,7 @@ export async function getOverviewController(_request, response) {
 }
 
 // Get Artwork Leaderboard
+
 export async function getLeaderboardController(_request, response) {
   const result = await pool.query(`
     SELECT
@@ -75,16 +76,18 @@ export async function getLeaderboardController(_request, response) {
       a.title,
       a.image_url,
       a.is_active,
+      a.created_at,
+      a.updated_at,
       COUNT(v.id)::int AS total_votes
     FROM artworks a
     LEFT JOIN votes v ON v.artwork_id = a.id
-    WHERE a.is_active = TRUE
     GROUP BY a.id
-    ORDER BY total_votes DESC, a.art_code
+    ORDER BY a.created_at DESC, a.art_code
   `)
 
   return response.json(result.rows)
 }
+
 
 // Update Voting Status
 export async function updateVotingStatusController(request, response) {
@@ -118,3 +121,38 @@ export async function deleteArtworkController(request, response) {
 
   return response.json(result.rows[0])
 }
+
+
+export async function getArtworkVotesController(request, response) {
+  const { id } = request.params
+
+  if (!/^\d+$/.test(id)) {
+    throw createHttpError('Invalid artwork ID.', 400)
+  }
+
+  const artworkResult = await pool.query(
+    'SELECT id FROM artworks WHERE id = $1',
+    [id]
+  )
+
+  if (!artworkResult.rows[0]) {
+    throw createHttpError('Artwork not found.', 404)
+  }
+
+  const result = await pool.query(
+    `SELECT
+       v.voter_email AS email,
+       v.created_at AS voted_at
+     FROM votes v
+     INNER JOIN voters s ON s.email = v.voter_email
+     WHERE v.artwork_id = $1
+     ORDER BY v.created_at DESC`,
+    [id]
+  )
+
+  return response.json({
+    total_votes: result.rows.length,
+    voters: result.rows,
+  })
+}
+
