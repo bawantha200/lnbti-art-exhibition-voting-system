@@ -43,6 +43,11 @@ function ArtworkManagement({
   const [editError, setEditError] = useState('')
   const [showVoters, setShowVoters] = useState(false)
 
+  // Custom confirmation modal state
+  const [confirmArtwork, setConfirmArtwork] = useState(null)
+  const [deactivating, setDeactivating] = useState(false)
+  const [deactivateError, setDeactivateError] = useState('')
+
   useEffect(() => {
     if (!selectedArtwork) return undefined
 
@@ -86,6 +91,29 @@ function ArtworkManagement({
     setVoters([])
     setVoteError('')
     setShowVoters(false)
+  }
+
+  const handleConfirmDeactivate = async () => {
+    if (!confirmArtwork || deactivating) return
+
+    setDeactivating(true)
+    setDeactivateError('')
+
+    try {
+      const result = await onDeactivate(confirmArtwork.id)
+
+      // If the parent callback explicitly returns false, keep the modal open.
+      if (result === false) {
+        setDeactivateError('Unable to deactivate artwork. Please try again.')
+        return
+      }
+
+      setConfirmArtwork(null)
+    } catch (error) {
+      setDeactivateError(error.message || 'Unable to deactivate artwork.')
+    } finally {
+      setDeactivating(false)
+    }
   }
 
   const startEditing = () => {
@@ -219,7 +247,10 @@ function ArtworkManagement({
                   <button
                     type="button"
                     className="icon-button"
-                    onClick={() => onDeactivate(art.id)}
+                    onClick={() => {
+                      setDeactivateError('')
+                      setConfirmArtwork(art)
+                    }}
                     title="Deactivate"
                     aria-label="Deactivate artwork"
                   >
@@ -522,6 +553,80 @@ function ArtworkManagement({
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Deactivate Confirmation Modal */}
+      {confirmArtwork && (
+        <div
+          className="artwork-confirm-overlay"
+          onClick={() => {
+            if (!deactivating) {
+              setConfirmArtwork(null)
+              setDeactivateError('')
+            }
+          }}
+        >
+          <div
+            className="artwork-confirm-modal"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="artwork-confirm-title"
+            aria-describedby="artwork-confirm-description"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="artwork-confirm-icon">
+              <Trash2 size={23} />
+            </div>
+
+            <h2 id="artwork-confirm-title">Confirm Deactivation</h2>
+
+            <p id="artwork-confirm-description">
+              Are you sure you want to deactivate
+              <strong> {confirmArtwork.title || 'this artwork'}</strong>?
+              This artwork will no longer be available for voting.
+              Existing vote records will be retained.
+            </p>
+
+            {deactivateError && (
+              <p className="artwork-confirm-error" role="alert">
+                {deactivateError}
+              </p>
+            )}
+
+            <div className="artwork-confirm-actions">
+              <button
+                type="button"
+                className="artwork-confirm-no"
+                disabled={deactivating}
+                onClick={() => {
+                  setConfirmArtwork(null)
+                  setDeactivateError('')
+                }}
+              >
+                No, Cancel
+              </button>
+
+              <button
+                type="button"
+                className="artwork-confirm-yes"
+                disabled={deactivating}
+                onClick={handleConfirmDeactivate}
+              >
+                {deactivating ? (
+                  <>
+                    <LoaderCircle size={15} className="artwork-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={16} />
+                    Yes, Deactivate
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

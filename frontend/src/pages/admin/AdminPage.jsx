@@ -195,13 +195,7 @@ function AdminPage() {
 
   // Deactivate artwork
   const deactivateArtwork = async (id) => {
-    if (
-      !window.confirm(
-        'Deactivate this artwork? Existing votes will be preserved.'
-      )
-    ) {
-      return
-    }
+    setAdminError('')
 
     try {
       await apiRequest(`/admin/artworks/${id}/deactivate`, {
@@ -211,8 +205,10 @@ function AdminPage() {
       await loadDashboard()
     } catch (requestError) {
       setAdminError(requestError.message)
+      throw requestError
     }
   }
+
 
   // Edit artwork with FormData
   const editArtwork = async (id, formData) => {
