@@ -37,7 +37,7 @@ function WelcomeScreen({ onStart }) {
 
         <div className="eyebrow">
           <Sparkles size={14} />
-          Annual Student Art Exhibition & Competition
+          University Student Art Exhibition & Competition
         </div>
 
         <h1>
@@ -71,8 +71,7 @@ function WelcomeScreen({ onStart }) {
         <div className="welcome-footer">
           <div className="welcome-footer-credit">
             <span>Presented by LNBTI Japanese Club</span>
-            <span>Originally Designed & Developed by Bawantha Madubhashana</span>
-            <span>© 2026 Bawantha Madubhashana</span>
+            <span>Designed & Developed by Bawantha Madubhashana · © 2026</span>
           </div>
         </div>
       </div>
